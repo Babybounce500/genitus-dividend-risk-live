@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GENITUS LIVE RISK</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#f4f7fb;--surface:#ffffff;--panel:#ffffff;--border:#d9e2ec;--accent:#0e7490;--gold:#b45309;--green:#15803d;--red:#b91c1c;--muted:#52606d;--text:#1e293b;--bright:#0f172a;--mono:'Space Mono',monospace;--sans:'Rajdhani',sans-serif;}
+    :root.dark-theme{--bg:#080c10;--surface:#0d1117;--panel:#111820;--border:#1e2d3d;--accent:#00d4ff;--gold:#f0c040;--green:#00ff88;--red:#ff3b5c;--muted:#7d92a8;--text:#c8d8e8;--bright:#ffffff;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;min-height:100vh;transition:background .25s,color .25s;}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200;}
+    .logo{display:flex;align-items:center;gap:12px;}
+    .logo-mark{width:32px;height:32px;border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;color:var(--green);}
+    .logo-text{font-family:var(--mono);font-size:13px;letter-spacing:3px;color:var(--bright);}
+    .logo-sub{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);display:block;margin-top:1px;}
+    #themeToggleBtn{background:none;border:1px solid var(--border);color:var(--accent);width:30px;height:30px;border-radius:2px;cursor:pointer;font-size:14px;}
+    .live-badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:3px 8px;border:1px solid var(--green);color:var(--green);border-radius:2px;text-transform:uppercase;}
+    .layout{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 56px);}
+    @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+    .picker-panel{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px;gap:10px;overflow-y:auto;max-height:calc(100vh - 56px);}
+    .field-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;display:block;}
+    select,input[type="text"]{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 10px;outline:none;border-radius:2px;}
+    .picker-list{flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:2px;min-height:200px;}
+    .picker-item{padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px;}
+    .picker-item:hover{background:rgba(21,128,61,0.08);}
+    .picker-item .sym{font-family:var(--mono);color:var(--accent);font-weight:700;}
+    .picker-item .nm{color:var(--muted);font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .picker-empty{padding:30px 10px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:11px;}
+    .main-panel{padding:18px;overflow-y:auto;}
+    .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;color:var(--muted);font-family:var(--mono);font-size:12px;gap:10px;text-align:center;}
+    .welcome .big{font-size:32px;opacity:.4;}
+    .analysis-title{font-family:var(--mono);font-size:16px;color:var(--gold);letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;}
+    @media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+    .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px;}
+    .stat-box .lbl{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+    .stat-box .val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--bright);}
+    .stat-box .val.up{color:var(--green);} .stat-box .val.down{color:var(--red);}
+    .panel-block{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:14px;margin-bottom:16px;}
+    .panel-block h3{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:10px;}
+    .chart-wrap{height:280px;position:relative;}
+    .panel-block p.note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;}
+    .loading-line{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:40px;}
+    .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-mark">λ</div><div><span class="logo-text">GENITUS</span><span class="logo-sub">LIVE RISK METRICS</span></div></div>
+  <div style="display:flex;align-items:center;gap:10px"><span class="live-badge">● Yahoo Live</span><button id="themeToggleBtn" title="Toggle theme">🌙</button></div>
+</header>
+<div class="layout">
+  <div class="picker-panel">
+    <div><span class="field-label">Exchange</span><select id="exchangeSelect" onchange="onExchangeChange()"></select></div>
+    <div><span class="field-label">Search Symbol / Name</span><input type="text" id="searchInput" placeholder="e.g. SAP, Shell..." oninput="renderPicker()"></div>
+    <div class="picker-list" id="pickerList"><div class="picker-empty">Select an exchange to list its confirmed dividend payers.</div></div>
+  </div>
+  <div class="main-panel" id="mainPanel">
+    <div class="welcome"><div class="big">λ</div><div>Pick a symbol. Fetches 1 year of REAL daily prices live from Yahoo Finance and computes genuine Sharpe, Sortino, VaR, and Max Drawdown — Daniel's own StockSentinel formulas, ported exactly.</div></div>
+  </div>
+</div>
+<script>
+  const SUMMARY_URL = 'https://raw.githubusercontent.com/Babybounce500/genitus-ticker-cache/main/dividend-summary.csv';
+  const YF_CHART = 'https://stock-sentinel-domusaureaopn.replit.app/api/yahoo/chart';
+  const RF = 0.04; // matches core/risk.py's risk-free assumption
+
+  const YAHOO_SUFFIX = {
+    US:'', NYSE:'', NASDAQ:'', AMEX:'', PINK:'', OTCQB:'', OTCQX:'', BATS:'',
+    LSE:'.L', XETRA:'.DE', F:'.F', STU:'.SG', DU:'.DU', MU:'.MU', HM:'.HM', HA:'.HA', BE:'.BE',
+    PA:'.PA', AS:'.AS', BR:'.BR', LS:'.LS', SW:'.SW', MC:'.MC', VI:'.VI',
+    ST:'.ST', OL:'.OL', CO:'.CO', HE:'.HE', WAR:'.WA',
+    TO:'.TO', V:'.V', MX:'.MX', SA:'.SA',
+    HK:'.HK', SHG:'.SS', SHE:'.SZ', KO:'.KS', KQ:'.KQ', NSE:'.NS',
+    TW:'.TW', TWO:'.TWO', AU:'.AX', TA:'.TA', JSE:'.JO',
+  };
+
+  (function(){
+    const KEY='genitusTheme:liverisk';
+    function applyTheme(t){ document.documentElement.classList.toggle('dark-theme', t==='dark'); localStorage.setItem(KEY,t); const btn=document.getElementById('themeToggleBtn'); if(btn) btn.textContent = t==='dark' ? '☀' : '🌙'; }
+    window.__theme = localStorage.getItem(KEY) || 'light';
+    applyTheme(window.__theme);
+    document.addEventListener('DOMContentLoaded', function(){ const btn=document.getElementById('themeToggleBtn'); if(btn) btn.addEventListener('click', function(){ window.__theme = window.__theme==='dark' ? 'light' : 'dark'; applyTheme(window.__theme); }); });
+  })();
+  function parseCSVLine(line){
+    const out=[]; let cur=''; let inQ=false;
+    for(let i=0;i<line.length;i++){ const c=line[i];
+      if(inQ){ if(c==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else inQ=false; } else cur+=c; }
+      else { if(c===','){ out.push(cur); cur=''; } else if(c==='"'){ inQ=true; } else cur+=c; } }
+    out.push(cur); return out;
+  }
+  let summaryByExchange = new Map(); let cacheReady = null;
+  function loadCache(){
+    if(cacheReady) return cacheReady;
+    cacheReady = fetch(SUMMARY_URL).then(r=>r.text()).then(sText=>{
+      const sLines = sText.split('\n').filter(Boolean);
+      for(let i=1;i<sLines.length;i++){
+        const [fullSymbol,name,type,ex,count,streakYears,streakDir,yieldPct] = parseCSVLine(sLines[i]);
+        if(!fullSymbol||!ex) continue;
+        if(!summaryByExchange.has(ex)) summaryByExchange.set(ex, []);
+        summaryByExchange.get(ex).push({ fullSymbol, name:(name||'').trim(), ex, yieldPct:parseFloat(yieldPct)||0 });
+      }
+    }).catch(e=>console.warn('Cache load failed:', e.message));
+    return cacheReady;
+  }
+  const EXCHANGES = [
+    {g:'🇺🇸 United States',opts:['US','NYSE','NASDAQ','AMEX','PINK','OTCQB','OTCQX','BATS']},
+    {g:'🇨🇦 Canada',opts:['TO','V']}, {g:'🌎 Latin America',opts:['MX','SA']},
+    {g:'🇬🇧 United Kingdom',opts:['LSE']},
+    {g:'🇩🇪 Germany',opts:['XETRA','F','STU','DU','MU','HM','HA','BE']},
+    {g:'🇫🇷 France',opts:['PA']}, {g:'🇳🇱 Netherlands',opts:['AS']}, {g:'🇧🇪 Belgium',opts:['BR']},
+    {g:'🇵🇹 Portugal',opts:['LS']}, {g:'🇨🇭 Switzerland',opts:['SW']}, {g:'🇪🇸 Spain',opts:['MC']},
+    {g:'🇦🇹 Austria',opts:['VI']},
+    {g:'🇸🇪 Scandinavia',opts:['ST','OL','CO','HE']},
+    {g:'🇵🇱 Poland',opts:['WAR']},
+    {g:'🇮🇱 Israel',opts:['TA']}, {g:'🇿🇦 South Africa',opts:['JSE']},
+    {g:'🇭🇰 Hong Kong',opts:['HK']}, {g:'🇨🇳 China',opts:['SHG','SHE']},
+    {g:'🇰🇷 Korea',opts:['KO','KQ']}, {g:'🇮🇳 India',opts:['NSE']},
+    {g:'🇹🇼 Taiwan',opts:['TW','TWO']}, {g:'🇦🇺 Australia',opts:['AU']},
+  ];
+  function buildExchangeSelect(){
+    document.getElementById('exchangeSelect').innerHTML = '<option value="">— Select Market —</option>' +
+      EXCHANGES.map(g=>`<optgroup label="${g.g}">${g.opts.map(o=>`<option value="${o}">${o}</option>`).join('')}</optgroup>`).join('');
+  }
+  let currentList = [];
+  async function onExchangeChange(){
+    const ex = document.getElementById('exchangeSelect').value;
+    document.getElementById('searchInput').value='';
+    if(!ex){ currentList=[]; renderPicker(); return; }
+    await loadCache();
+    currentList = (summaryByExchange.get(ex)||[]).slice().sort((a,b)=>b.yieldPct-a.yieldPct);
+    renderPicker();
+  }
+  function renderPicker(){
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    const list = document.getElementById('pickerList');
+    const rows = currentList.filter(r=>!q || r.fullSymbol.toLowerCase().includes(q) || r.name.toLowerCase().includes(q));
+    if(!rows.length){ list.innerHTML = '<div class="picker-empty">No matches.</div>'; return; }
+    list.innerHTML = rows.slice(0,300).map(r=>`<div class="picker-item" onclick="selectSymbol('${r.fullSymbol}','${r.ex}')"><span class="sym">${r.fullSymbol}</span> — ${r.yieldPct.toFixed(2)}%<span class="nm">${r.name}</span></div>`).join('');
+  }
+  function fmt(n){ const v=parseFloat(n); return isNaN(v)?'—':(v<0.01?v.toFixed(6):v.toFixed(2)); }
+  function mean(arr){ return arr.reduce((s,v)=>s+v,0)/arr.length; }
+  function std(arr){ const m=mean(arr); return Math.sqrt(arr.reduce((s,v)=>s+(v-m)*(v-m),0)/arr.length); }
+
+  // Exact ports of core/risk.py — same formulas, same risk-free assumption.
+  function computeRisk(closes){
+    const returns = [];
+    for(let i=1;i<closes.length;i++) returns.push(closes[i]/closes[i-1]-1);
+    if(!returns.length) return null;
+
+    const annualVol = std(returns) * Math.sqrt(252) * 100;
+    const meanR = mean(returns), sdR = std(returns);
+    const excess = meanR*252 - RF;
+    const sharpe = sdR>0 ? excess/(sdR*Math.sqrt(252)) : null;
+    const downside = returns.filter(r=>r<0);
+    const sdDown = downside.length ? std(downside) : 0;
+    const sortino = sdDown>0 ? excess/(sdDown*Math.sqrt(252)) : null;
+
+    let cum=1, peak=1, maxDD=0;
+    returns.forEach(r=>{ cum *= (1+r); if(cum>peak) peak=cum; const dd=cum/peak-1; if(dd<maxDD) maxDD=dd; });
+
+    const sorted = [...returns].sort((a,b)=>a-b);
+    const idx = Math.floor(0.05*sorted.length);
+    const var95 = sorted[idx]*100;
+
+    const totalGrowth = returns.reduce((acc,r)=>acc*(1+r),1);
+    const n = returns.length;
+    const annualizedReturn = n>0 ? (Math.pow(totalGrowth, 252/n)-1)*100 : null;
+    const cumulativeReturn = (closes[closes.length-1]/closes[0]-1)*100;
+
+    return { annualVol, sharpe, sortino, maxDrawdown:maxDD*100, var95, annualizedReturn, cumulativeReturn };
+  }
+
+  let liveChart=null;
+  async function selectSymbol(fullSymbol, ex){
+    const panel = document.getElementById('mainPanel');
+    panel.innerHTML = '<div class="loading-line"><span class="spinner"></span>Fetching 1 year of live daily prices from Yahoo...</div>';
+
+    if(!(ex in YAHOO_SUFFIX)){
+      panel.innerHTML = `<div class="welcome">No Yahoo suffix mapping for exchange "${ex}" yet — can't fetch live daily data for this one.</div>`;
+      return;
+    }
+    const ySym = fullSymbol.split('.')[0] + YAHOO_SUFFIX[ex];
+
+    let json, res;
+    try{
+      res = await fetch(`${YF_CHART}/${encodeURIComponent(ySym)}?period_days=400`);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      json = await res.json();
+    }catch(e){
+      panel.innerHTML = `<div class="welcome">Live-Abruf für ${ySym} fehlgeschlagen (${e.message}). Dieser Yahoo-Proxy hat ein eigenes Rate-Limit — wenn gerade mehrere Abfragen kurz hintereinander liefen, ein paar Minuten warten und erneut versuchen, statt mehrfach schnell nachzuklicken.</div>`;
+      return;
+    }
+
+    const result = json?.chart?.result?.[0];
+    if(!result || !result.timestamp){
+      const errBody = json?.error;
+      panel.innerHTML = errBody
+        ? `<div class="welcome">Kein Chart für ${ySym} (${errBody}). Kann ein echter fehlender Ticker sein, ODER ein kurzzeitiges Yahoo-Rate-Limit nach mehreren schnellen Abfragen — bei bekannten Symbolen im Zweifel kurz warten und erneut versuchen.</div>`
+        : `<div class="welcome">No chart data returned for ${ySym}.</div>`;
+      return;
+    }
+    const ts = result.timestamp;
+    const closes = result.indicators?.quote?.[0]?.close || [];
+    // Drop any row with a missing/non-finite close (incomplete current-session
+    // row) — exactly the StockSentinel "yahoo-chart-incomplete-rows" fix.
+    const clean = ts.map((t,i)=>({date:new Date(t*1000).toISOString().split('T')[0], close:closes[i]}))
+                     .filter(r=>typeof r.close==='number' && isFinite(r.close) && r.close>0);
+
+    if(clean.length<30){
+      panel.innerHTML = `<div class="welcome">Not enough clean daily closes for ${ySym} to compute risk metrics.</div>`;
+      return;
+    }
+
+    const risk = computeRisk(clean.map(c=>c.close));
+    const meta = result.meta || {};
+
+    panel.innerHTML = `
+      <div class="analysis-title">${fullSymbol} <span class="live-badge">${ySym} · live</span></div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="lbl">Current Price</div><div class="val">${fmt(meta.regularMarketPrice)} ${meta.currency||''}</div></div>
+        <div class="stat-box"><div class="lbl">52-Week Range</div><div class="val" style="font-size:13px">${fmt(meta.fiftyTwoWeekLow)} – ${fmt(meta.fiftyTwoWeekHigh)}</div></div>
+        <div class="stat-box"><div class="lbl">1Y Cumulative Return</div><div class="val ${risk.cumulativeReturn>=0?'up':'down'}">${risk.cumulativeReturn.toFixed(1)}%</div></div>
+        <div class="stat-box"><div class="lbl">Annualized Return</div><div class="val ${risk.annualizedReturn>=0?'up':'down'}">${risk.annualizedReturn.toFixed(1)}%</div></div>
+        <div class="stat-box"><div class="lbl">Annual. Volatility</div><div class="val">${risk.annualVol.toFixed(1)}%</div></div>
+        <div class="stat-box"><div class="lbl">Sharpe (rf 4%)</div><div class="val ${risk.sharpe>=1?'up':''}">${risk.sharpe!=null?risk.sharpe.toFixed(2):'—'}</div></div>
+        <div class="stat-box"><div class="lbl">Sortino (rf 4%)</div><div class="val">${risk.sortino!=null?risk.sortino.toFixed(2):'—'}</div></div>
+        <div class="stat-box"><div class="lbl">Max Drawdown</div><div class="val down">${risk.maxDrawdown.toFixed(1)}%</div></div>
+        <div class="stat-box"><div class="lbl">VaR 95% (1-day)</div><div class="val down">${risk.var95.toFixed(2)}%</div></div>
+      </div>
+      <div class="panel-block">
+        <h3>1-Year Daily Price</h3>
+        <div class="chart-wrap"><canvas id="liveChart"></canvas></div>
+        <p class="note">Echte tägliche Schlusskurse, live von Yahoo Finance über Daniels eigenen StockSentinel-Proxy — ${clean.length} Handelstage. Formeln 1:1 aus <code>core/risk.py</code> übernommen: Sharpe/Sortino mit 4% risikofreiem Zins, VaR als 5.-Perzentil der Tagesrenditen, Max Drawdown auf kumulierter Rendite. Dies ist eine Analyse historischer Daten, keine Prognose oder Anlageberatung.</p>
+      </div>
+    `;
+
+    const ctx = document.getElementById('liveChart').getContext('2d');
+    if(liveChart) liveChart.destroy();
+    liveChart = new Chart(ctx, {
+      type:'line',
+      data:{ labels: clean.map(c=>c.date), datasets:[{ label:'Close', data: clean.map(c=>c.close), borderColor: risk.cumulativeReturn>=0?'#00ff88':'#ff3b5c', backgroundColor:'transparent', borderWidth:1.5, pointRadius:0, tension:0.1 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{ x:{ ticks:{ color:'#7d92a8', font:{family:'Space Mono',size:8}, maxTicksLimit:8, maxRotation:0 }, grid:{ display:false } },
+                 y:{ ticks:{ color:'#7d92a8', font:{family:'Space Mono',size:9} }, grid:{ color:'rgba(125,146,168,0.15)' } } }
+      }
+    });
+  }
+  buildExchangeSelect();
+</script>
+</body>
+</html>
