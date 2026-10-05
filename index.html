@@ -101,7 +101,7 @@
         const [fullSymbol,name,type,ex,count,streakYears,streakDir,yieldPct] = parseCSVLine(sLines[i]);
         if(!fullSymbol||!ex) continue;
         if(!summaryByExchange.has(ex)) summaryByExchange.set(ex, []);
-        summaryByExchange.get(ex).push({ fullSymbol, name:(name||'').trim(), ex, yieldPct:parseFloat(yieldPct)||0 });
+        summaryByExchange.get(ex).push({ fullSymbol, name:(name||'').trim(), ex, yieldPct:(parseFloat(yieldPct)||0)>50?0:(parseFloat(yieldPct)||0) });
       }
     }).catch(e=>console.warn('Cache load failed:', e.message));
     return cacheReady;
